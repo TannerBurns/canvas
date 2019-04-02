@@ -5,6 +5,15 @@ import (
 )
 
 /*
+Status - strucutre or server status
+*/
+type Status struct {
+	Status  string
+	Name    string
+	Version string
+}
+
+/*
 Controller - structure to make multiple controllers if needed
 */
 type Controller struct {

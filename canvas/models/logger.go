@@ -19,10 +19,10 @@ type Logger struct {
 	Log        *log.Logger
 }
 
-func NewLogger() *Logger {
+func NewLogger(name string) *Logger {
 	logger := &Logger{}
 
-	logger.InitLogging("Cage", os.Stdout, os.Stdout, os.Stdout, os.Stderr, os.Stderr, os.Stdout)
+	logger.InitLogging(name, os.Stdout, os.Stdout, os.Stdout, os.Stderr, os.Stderr, os.Stdout)
 	return logger
 }
 
