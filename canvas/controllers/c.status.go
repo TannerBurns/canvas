@@ -40,6 +40,9 @@ func (c *Controller) Status(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	c.Logger.Logging(req, 200)
 	json.NewEncoder(w).Encode(Status{
-		Status: "OK", Name: "Canvas.API.Status", Version: "1.0.0"})
+		Status:  "OK",
+		Name:    c.Session.LiteConfig.Config["default"]["name"],
+		Version: c.Session.LiteConfig.Config["default"]["version"],
+	})
 	return
 }
