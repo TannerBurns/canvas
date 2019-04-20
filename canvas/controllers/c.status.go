@@ -15,18 +15,7 @@ func (c *Controller) Status(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	db, err := c.Session.Connect()
-	if err != nil {
-		error := models.RespError{
-			Error: "Failed to connect, cannot reach database"}
-		resp, _ := json.Marshal(error)
-		http.Error(w, string(resp), 400)
-		c.Logger.Logging(req, 400)
-		return
-	}
-	defer db.Close()
-
-	err = db.Ping()
+	err := c.Session.Database.Ping()
 	if err != nil {
 		fmt.Println(err)
 		error := models.RespError{

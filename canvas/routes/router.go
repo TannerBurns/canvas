@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"log"
 	"net/http"
 
 	"../controllers"
@@ -17,10 +18,16 @@ type Route struct {
 
 type Routes []Route
 
-func NewRouter() (*mux.Router, *models.Logger) {
-	controller := &controllers.Controller{Name: "API.Controller"}
-	controller.Session = models.NewSession()
-	controller.Logger = models.NewLogger(controller.Session.LiteConfig.Config["default"]["name"])
+func NewRouter() (*mux.Router, *controllers.Controller) {
+	lc, err := models.NewConfig("./config/settings.conf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	controller := &controllers.Controller{
+		Name: "API.Controller",
+	}
+	controller.Logger = models.NewLogger(lc.Config["api"]["name"])
+	controller.Session, _ = models.NewSession(lc)
 
 	Routes := []Routes{
 		StatusRoutes(controller),
@@ -39,5 +46,5 @@ func NewRouter() (*mux.Router, *models.Logger) {
 				Handler(handler)
 		}
 	}
-	return router, controller.Logger
+	return router, controller
 }

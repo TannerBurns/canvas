@@ -9,12 +9,14 @@ import (
 
 type Connection struct {
 	LiteConfig *LiteConfig
+	Database   *sql.DB
 }
 
-func NewSession() *Connection {
-	connection := &Connection{}
-	connection.LiteConfig, _ = NewConfig("./config/settings.conf")
-	return connection
+func NewSession(lc *LiteConfig) (conn *Connection, err error) {
+	c := Connection{LiteConfig: lc}
+	c.Database, err = c.Connect()
+	conn = &c
+	return
 }
 
 // Connect to database
