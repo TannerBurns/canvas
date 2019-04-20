@@ -13,25 +13,18 @@ import (
 )
 
 func main() {
-	logs := &models.Logger{}
-	logs.InitLogging("House - API", os.Stdout, os.Stdout, os.Stdout, os.Stderr, os.Stderr, os.Stdout)
+	router, con := routes.NewRouter() // create routes
 
-	router, conlogger := routes.NewRouter() // create routes
-
-	f, err := os.OpenFile("connections.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		fmt.Println("Failed to initialize logger")
-	}
-	defer f.Close()
-	conlogger.Log.SetOutput(f)
-
-	// These two lines are important in order to allow access from the front-end side to the methods
+	// These two lines are important in order to allow access from the
+	//	front-end side to the methods
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
-	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "DELETE", "PUT"})
+	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST",
+		"DELETE", "PUT"})
 
 	cfg := &tls.Config{
-		MinVersion:               tls.VersionTLS12,
-		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+		MinVersion: tls.VersionTLS12,
+		CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384,
+			tls.CurveP256},
 		PreferServerCipherSuites: true,
 		CipherSuites: []uint16{
 			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
@@ -42,12 +35,35 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:         ":443",
-		Handler:      handlers.CORS(allowedOrigins, allowedMethods)(router),
-		TLSConfig:    cfg,
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+		Addr:      ":" + con.Session.LiteConfig.Config["default"]["port"],
+		Handler:   handlers.CORS(allowedOrigins, allowedMethods)(router),
+		TLSConfig: cfg,
+		TLSNextProto: make(map[string]func(
+			*http.Server,
+			*tls.Conn,
+			http.Handler), 0),
 	}
 
+	logs := &models.Logger{}
+	logs.InitLogging(
+		con.Session.LiteConfig.Config["api"]["name"],
+		os.Stdout,
+		os.Stdout,
+		os.Stdout,
+		os.Stderr,
+		os.Stderr,
+		os.Stdout,
+	)
+	f, err := os.OpenFile("connections.log", os.O_RDWR|os.O_CREATE|os.O_APPEND,
+		0666)
+	if err != nil {
+		fmt.Println("Failed to initialize logger")
+	}
+	defer f.Close()
+	con.Logger.Log.SetOutput(f)
+	defer con.Session.Database.Close()
+
 	// Launch server with CORS validations
-	logs.Fatal.Println(srv.ListenAndServeTLS("certs/server.rsa.crt", "certs/server.rsa.key"))
+	logs.Fatal.Println(srv.ListenAndServeTLS("certs/server.rsa.crt",
+		"certs/server.rsa.key"))
 }
